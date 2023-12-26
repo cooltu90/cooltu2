@@ -9,10 +9,6 @@ import com.codingtu.cooltu.constant.Suffix;
 import com.codingtu.cooltu.lib4j.data.java.JavaInfo;
 import com.codingtu.cooltu.lib4j.file.FileTool;
 import com.codingtu.cooltu.lib4j.tools.ConvertTool;
-import com.codingtu.cooltu.processor.BuilderType;
-import com.codingtu.cooltu.processor.builder.impl.ActBaseBuilder;
-import com.codingtu.cooltu.processor.builder.impl.FragmentBaseBuilder;
-import com.codingtu.cooltu.processor.lib.BuilderMap;
 
 public class CurrentPath {
 
@@ -113,10 +109,10 @@ public class CurrentPath {
         return javaInfo(pkg, actJavaInfo.name + Suffix.ACT_BASE);
     }
 
-    public static ActBaseBuilder actBaseBuilder(String actFullName) {
-        JavaInfo javaInfo = actBase(actFullName);
-        return BuilderMap.find(BuilderType.actBase, javaInfo.fullName);
-    }
+//    public static ActBaseBuilder actBaseBuilder(String actFullName) {
+//        JavaInfo javaInfo = actBase(actFullName);
+//        return BuilderMap.find(BuilderType.actBase, javaInfo.fullName);
+//    }
 
 
     /**************************************************
@@ -157,10 +153,10 @@ public class CurrentPath {
     }
 
 
-    public static FragmentBaseBuilder fragBaseBuilder(String actFullName) {
-        JavaInfo javaInfo = fragBase(actFullName);
-        return BuilderMap.find(BuilderType.fragment, javaInfo.fullName);
-    }
+//    public static FragmentBaseBuilder fragBaseBuilder(String actFullName) {
+//        JavaInfo javaInfo = fragBase(actFullName);
+//        return BuilderMap.find(BuilderType.fragment, javaInfo.fullName);
+//    }
 
 
     /**************************************************

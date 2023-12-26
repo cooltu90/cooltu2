@@ -1,8 +1,7 @@
 package com.codingtu.cooltu.processor.builder.core;
 
+import com.codingtu.cooltu.constant.ClassType;
 import com.codingtu.cooltu.lib4j.data.java.JavaInfo;
-import com.codingtu.cooltu.lib4j.data.map.ListValueMap;
-import com.codingtu.cooltu.lib4j.data.map.StringBuilderValueMap;
 import com.codingtu.cooltu.lib4j.data.symbol.Symbol;
 import com.codingtu.cooltu.lib4j.file.write.FileWriter;
 import com.codingtu.cooltu.lib4j.tools.CountTool;
@@ -15,14 +14,17 @@ import com.codingtu.cooltu.processor.lib.tools.TagTools;
 import java.io.File;
 import java.util.ArrayList;
 import java.util.List;
-import java.util.Map;
 
 public abstract class CoreBuilder implements Symbol {
-    public boolean isForce;
+
     protected JavaInfo javaInfo;
+    private List<String> fieldLines = new ArrayList<>();
+    private List<String> methodLines = new ArrayList<>();
 
-    protected StringBuilderValueMap<String> map = new StringBuilderValueMap();
-
+    @Override
+    public String obtainSymbol() {
+        return getClass().getCanonicalName();
+    }
 
     public CoreBuilder(JavaInfo info) {
         this.javaInfo = info;
@@ -31,11 +33,6 @@ public abstract class CoreBuilder implements Symbol {
 
     protected BuilderType getBuilderType() {
         return BuilderType.DEFAULT;
-    }
-
-    @Override
-    public String obtainSymbol() {
-        return getClass().getCanonicalName();
     }
 
     public void create() {
@@ -52,9 +49,6 @@ public abstract class CoreBuilder implements Symbol {
         }
     }
 
-    protected void beforeBuild(List<String> lines) {
-    }
-
     protected boolean isGetLines() {
         return true;
     }
@@ -68,158 +62,105 @@ public abstract class CoreBuilder implements Symbol {
     }
 
 
-    private List<String> getLines() {
-        dealLines();
-        dealLinesInParent();
-        return TagTools.dealLines(map, getTempLines());
-    }
-
-    protected void dealLinesInParent() {
+    protected void beforeBuild(List<String> lines) {
 
     }
 
-    protected abstract void dealLines();
-
-    protected abstract List<String> getTempLines();
-
-    /**************************************************
-     *
-     *
-     *
-     **************************************************/
-
-    protected void countAdd(Map<String, Integer> counts, String key) {
-        Integer count = counts.get(key);
-        if (count == null) {
-            count = 0;
-        }
-        counts.put(key, count + 1);
-    }
-
-    protected int count(Map<String, Integer> counts, String key) {
-        Integer count = counts.get(key);
-        if (count == null) {
-            count = 0;
-        }
-        return count;
-    }
-
-    protected String getForKey(String tag, int... ii) {
-        return getKey("for-" + tag, ii);
-    }
-
-    protected String getIfKey(String tag, int... ii) {
-        return getKey("if-" + tag, ii);
-    }
-
-    private String getKey(String tag, int... ii) {
-        StringBuilder sb = new StringBuilder();
-        sb.append(tag);
-        Ts.ts(ii).ls(new BaseTs.EachTs<Integer>() {
-            @Override
-            public boolean each(int position, Integer integer) {
-                sb.append("-").append(integer);
-                return false;
-            }
-        });
-        return sb.toString();
-    }
-
-
-    protected void addForMap(ListValueMap<String, String> map, String key, String... strs) {
-        List<String> list = map.get(key);
-        Ts.ls(strs, new BaseTs.EachTs<String>() {
+    protected List<String> getLines() {
+        List<String> strings = new ArrayList<>();
+        //pkg
+        strings.add("package " + javaInfo.pkg + ";");
+        strings.add("");
+        //imports
+        Ts.ls(getImports(), new BaseTs.EachTs<String>() {
             @Override
             public boolean each(int position, String s) {
-                list.add(s);
+                strings.add("import " + s + ";");
                 return false;
             }
         });
-    }
-
-
-    protected void addForMap(java.util.Map<String, Integer> counts, ListValueMap<String, String> map,
-                             String key, int[] keys, String... strs) {
-        key = getForKey(key, keys);
-        int count = count(counts, key);
-        List<String> list = map.get(keyAppend(key, count));
-        Ts.ls(strs, new BaseTs.EachTs<String>() {
-            @Override
-            public boolean each(int position, String s) {
-                list.add(s);
-                return false;
+        //class的描述
+        StringBuilder classSb = new StringBuilder();
+        classSb.append(classType()).append(" ");
+        if (isFinal()) {
+            classSb.append("final ");
+        }
+        if (isInterface()) {
+            classSb.append("interface ");
+        } else {
+            if (isAbstract()) {
+                classSb.append("abstract ");
             }
-        });
-        countAdd(counts, key);
-    }
-
-    private String keyAppend(String key, int i) {
-        return key + "-" + i;
-    }
-
-    protected boolean isIf(Map<String, Boolean> ifs, String key) {
-        Boolean aBoolean = ifs.get(key);
-        return aBoolean == null ? false : aBoolean;
-    }
-
-    protected String getParams(List<String> params){
-        return getParams(params,false,false);
-    }
-
-    protected String getParams(List<String> params, boolean hasPre, boolean hasNext) {
-        if (params == null) {
-            params = new ArrayList<>();
+            classSb.append("class ");
         }
-        StringBuilder sb = new StringBuilder();
-        int count = CountTool.count(params);
+        classSb.append(javaInfo.name).append(" ");
+        String[] parents = getParents();
+        if (!CountTool.isNull(parents)) {
+            if (isInterface()) {
+                classSb.append("implements ");
+            } else {
+                classSb.append("extends ");
+            }
 
-        if (hasPre && count != 0) {
-            sb.append(", ");
-        }
-        Ts.ls(params, new BaseTs.EachTs<String>() {
-            @Override
-            public boolean each(int position, String param) {
-                if (position != 0) {
-                    sb.append(", ");
+            Ts.ls(parents, new BaseTs.EachTs<String>() {
+                @Override
+                public boolean each(int position, String s) {
+                    if (position != 0) {
+                        classSb.append(", ");
+                    }
+                    classSb.append(s);
+                    return false;
                 }
-                sb.append(param);
-                return false;
-            }
-        });
-        if (hasNext) {
-            if (hasPre || count > 0) {
-                sb.append(", ");
-            }
+            });
+            classSb.append(" ");
         }
-        return sb.toString();
+        classSb.append("{");
+        strings.add(classSb.toString());
+        strings.add("");
+        //中间的需要补充
+
+        addLines();
+
+        strings.addAll(fieldLines);
+        strings.addAll(methodLines);
+
+        //class结束
+        strings.add("}");
+        return strings;
     }
 
-    protected List<String> getMethodIntParams(int num) {
-        ArrayList<String> params = new ArrayList<>();
-        for (int i = 0; i < num; i++) {
-            params.add("int i" + i);
-        }
-        return params;
+    protected abstract void addLines();
+
+    protected String[] getImports() {
+        return new String[0];
     }
 
-    protected List<String> getUseMethodIntParams(int num) {
-        ArrayList<String> params = new ArrayList<>();
-        for (int i = 0; i < num; i++) {
-            params.add("i" + i);
-        }
-        return params;
+    protected String[] getParents() {
+        return new String[0];
     }
 
-    public void addLnTag(StringBuilder tag, String line, Object... tags) {
-        tag.append(dealLine(line, tags)).append("\r\n");
+    protected String classType() {
+        return ClassType.PUBLIC;
     }
 
-    public void addTag(StringBuilder tag, String line, Object... tags) {
-        tag.append(dealLine(line, tags));
+    protected boolean isAbstract() {
+        return false;
     }
 
-    private String dealLine(String line, Object... values) {
-        return TagTools.dealLine(line, values);
+    protected boolean isInterface() {
+        return false;
+    }
+
+    protected boolean isFinal() {
+        return false;
+    }
+
+    protected void addfieldLine(String line, Object... tags) {
+        fieldLines.add(TagTools.dealLine(line, tags));
+    }
+
+    protected void addMethodLine(String line, Object... tags) {
+        methodLines.add(TagTools.dealLine(line, tags));
     }
 
 }

@@ -1,19 +1,15 @@
 package com.codingtu.cooltu.processor.builder.impl;
 
 import com.codingtu.cooltu.constant.FullName;
-import com.codingtu.cooltu.constant.Pkg;
 import com.codingtu.cooltu.lib4j.ts.Ts;
 import com.codingtu.cooltu.lib4j.ts.impl.BaseTs;
-import com.codingtu.cooltu.lib4j.ts.impl.MapTs;
-import com.codingtu.cooltu.processor.builder.base.Code4RequestBuilderBase;
-import com.codingtu.cooltu.processor.deal.ResForDeal;
+import com.codingtu.cooltu.processor.builder.core.CoreBuilder;
 import com.codingtu.cooltu.processor.lib.path.CurrentPath;
 
 import java.util.HashMap;
-import java.util.List;
 import java.util.Map;
 
-public class Code4RequestBuilder extends Code4RequestBuilderBase {
+public class Code4RequestBuilder extends CoreBuilder {
 
     public static final Code4RequestBuilder BUILDER = new Code4RequestBuilder();
 
@@ -23,60 +19,23 @@ public class Code4RequestBuilder extends Code4RequestBuilderBase {
         super(CurrentPath.javaInfo(FullName.CODE_4_REQUEST));
     }
 
-
-    public void addAct(String classFullName) {
-        String s = CurrentPath.actStaticName(classFullName);
-        fullNames.put(s, s);
+    public void addAct(String actFullName) {
+        addStaticName(CurrentPath.actStaticName(actFullName));
     }
 
-    public void add(String name) {
+    public void addStaticName(String name) {
         fullNames.put(name, name);
     }
 
     @Override
-    protected boolean isBuild() {
-        return true;
-    }
-
-    @Override
-    protected boolean isGetLines() {
-        return true;
-    }
-
-    @Override
-    protected void beforeBuild(List<String> lines) {
-        super.beforeBuild(lines);
-    }
-
-    @Override
-    protected void dealLines() {
-        addTag(pkg, Pkg.CORE_TOOLS);
-//        Ts.ts(fullNames.keySet()).ls(new BaseTs.EachTs<String>() {
-//            @Override
-//            public boolean each(int position, String s) {
-//                field(position, s, position + "");
-//                return false;
-//            }
-//        });
-
-        Ts.ts(ResForDeal.HAS_START_MAP.keySet()).ls(new BaseTs.EachTs<String>() {
+    protected void addLines() {
+        Ts.ts(fullNames.keySet()).ls(new BaseTs.EachTs<String>() {
             @Override
             public boolean each(int position, String s) {
-                field(position, CurrentPath.actStaticName(s), position + "");
+                addfieldLine("    public static final int [name] = [num];", s, position);
                 return false;
             }
         });
     }
 
 }
-/* model_temp_start
-package [[pkg]];
-
-public class Code4Request {
-                                                                                                    [<sub>][for][field]
-    public static final int [name] = [value];
-                                                                                                    [<sub>][for][field]
-
-}
-model_temp_end */
-

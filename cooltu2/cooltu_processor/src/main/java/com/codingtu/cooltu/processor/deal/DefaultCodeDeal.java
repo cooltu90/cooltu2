@@ -15,8 +15,8 @@ public class DefaultCodeDeal extends TypeBaseDeal {
         String[] codes = defaultCode.value();
         Ts.ls(codes, new BaseTs.EachTs<String>() {
             @Override
-            public boolean each(int position, String s) {
-                Code4RequestBuilder.BUILDER.add(s);
+            public boolean each(int position, String code) {
+                Code4RequestBuilder.BUILDER.addStaticName(code);
                 return false;
             }
         });
