@@ -18,7 +18,7 @@ import java.util.List;
 public abstract class CoreBuilder implements Symbol {
 
     protected JavaInfo javaInfo;
-    private List<String> fieldLines = new ArrayList<>();
+    protected List<String> fieldLines = new ArrayList<>();
     private List<String> methodLines = new ArrayList<>();
 
     @Override
