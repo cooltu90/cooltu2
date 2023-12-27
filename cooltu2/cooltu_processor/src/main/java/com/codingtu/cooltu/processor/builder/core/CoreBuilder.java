@@ -5,21 +5,24 @@ import com.codingtu.cooltu.lib4j.data.java.JavaInfo;
 import com.codingtu.cooltu.lib4j.data.symbol.Symbol;
 import com.codingtu.cooltu.lib4j.file.write.FileWriter;
 import com.codingtu.cooltu.lib4j.tools.CountTool;
+import com.codingtu.cooltu.lib4j.tools.StringTool;
 import com.codingtu.cooltu.lib4j.ts.Ts;
 import com.codingtu.cooltu.lib4j.ts.impl.BaseTs;
 import com.codingtu.cooltu.processor.BuilderType;
 import com.codingtu.cooltu.processor.lib.BuilderMap;
+import com.codingtu.cooltu.processor.lib.lines.DatasGetter;
 import com.codingtu.cooltu.processor.lib.tools.TagTools;
 
 import java.io.File;
 import java.util.ArrayList;
 import java.util.List;
+import java.util.Set;
 
 public abstract class CoreBuilder implements Symbol {
 
     protected JavaInfo javaInfo;
     protected List<String> fieldLines = new ArrayList<>();
-    private List<String> methodLines = new ArrayList<>();
+    protected List<String> methodLines = new ArrayList<>();
 
     @Override
     public String obtainSymbol() {
@@ -161,6 +164,39 @@ public abstract class CoreBuilder implements Symbol {
 
     protected void addMethodLine(String line, Object... tags) {
         methodLines.add(TagTools.dealLine(line, tags));
+    }
+
+
+    public static interface LineData<T> {
+        public Object[] data(int position, T t);
+    }
+
+    protected <T> void addFieldLine(String line, List<T> ts, DatasGetter<T> lineData) {
+        Ts.ts(ts).ls(getEachTsForFieldLine(line, lineData));
+    }
+
+    protected <T> void addFieldLine(String line, Set<T> ts, DatasGetter<T> lineData) {
+        Ts.ts(ts).ls(getEachTsForFieldLine(line, lineData));
+    }
+
+    private <T> BaseTs.EachTs<T> getEachTsForFieldLine(String line, DatasGetter<T> lineData) {
+        return new BaseTs.EachTs<T>() {
+            @Override
+            public boolean each(int position, T t) {
+                Object[] datas = lineData.data(position, t);
+                int count = CountTool.count(datas);
+                if (count > 0) {
+                    String line1 = line;
+                    for (int i = 0; i < count; i += 2) {
+                        String tag = (String) datas[i];
+                        String data = StringTool.toString(datas[i + 1]);
+                        line1 = line1.replace(tag, data);
+                    }
+                    fieldLines.add(line1);
+                }
+                return false;
+            }
+        };
     }
 
 }

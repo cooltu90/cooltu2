@@ -4,7 +4,9 @@ import com.codingtu.cooltu.constant.FullName;
 import com.codingtu.cooltu.lib4j.ts.Ts;
 import com.codingtu.cooltu.lib4j.ts.impl.BaseTs;
 import com.codingtu.cooltu.processor.builder.core.CoreBuilder;
+import com.codingtu.cooltu.processor.lib.lines.DatasGetter;
 import com.codingtu.cooltu.processor.lib.path.CurrentPath;
+import com.codingtu.cooltu.processor.lib.tools.LayoutTools;
 
 import java.util.HashMap;
 import java.util.Map;
@@ -29,11 +31,13 @@ public class Code4RequestBuilder extends CoreBuilder {
 
     @Override
     protected void addLines() {
-        Ts.ts(fullNames.keySet()).ls(new BaseTs.EachTs<String>() {
+        addFieldLine("    public static final int CODE_STATIC_NAME = 0;", fullNames.keySet(), new DatasGetter<String>() {
             @Override
-            public boolean each(int position, String s) {
-                addfieldLine("    public static final int [name] = [num];", s, position);
-                return false;
+            public Object[] data(int position, String s) {
+                return new Object[]{
+                        "CODE_STATIC_NAME", s,
+                        "0", position,
+                };
             }
         });
     }

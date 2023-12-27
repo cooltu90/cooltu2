@@ -27,7 +27,7 @@ import com.codingtu.cooltu.ui.base.BaseActivity;
 @DefaultNoticeDialogLayout(R.layout.dialog_notice)
 @DefaultEditDialogLayout(R.layout.dialog_edit)
 @DefaultDialogLayout(R.layout.dialog)
-@DefaultCode("CODE_TEST")
+@DefaultCode("CODES_TEST")
 @CreateAct(
         name = "form",
         packages = "com.codingtu.cooltu.ui",
