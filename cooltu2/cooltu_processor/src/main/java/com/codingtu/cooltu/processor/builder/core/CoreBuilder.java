@@ -5,24 +5,25 @@ import com.codingtu.cooltu.lib4j.data.java.JavaInfo;
 import com.codingtu.cooltu.lib4j.data.symbol.Symbol;
 import com.codingtu.cooltu.lib4j.file.write.FileWriter;
 import com.codingtu.cooltu.lib4j.tools.CountTool;
-import com.codingtu.cooltu.lib4j.tools.StringTool;
 import com.codingtu.cooltu.lib4j.ts.Ts;
 import com.codingtu.cooltu.lib4j.ts.impl.BaseTs;
 import com.codingtu.cooltu.processor.BuilderType;
 import com.codingtu.cooltu.processor.lib.BuilderMap;
-import com.codingtu.cooltu.processor.lib.lines.DatasGetter;
 import com.codingtu.cooltu.processor.lib.tools.TagTools;
 
 import java.io.File;
 import java.util.ArrayList;
+import java.util.HashMap;
 import java.util.List;
-import java.util.Set;
+import java.util.Map;
 
 public abstract class CoreBuilder implements Symbol {
 
     protected JavaInfo javaInfo;
     protected List<String> fieldLines = new ArrayList<>();
     protected List<String> methodLines = new ArrayList<>();
+    protected List<String> beforeClassLines = new ArrayList<>();
+    private Map<Integer, String> tempLines = new HashMap<>();
 
     @Override
     public String obtainSymbol() {
@@ -70,6 +71,9 @@ public abstract class CoreBuilder implements Symbol {
     }
 
     protected List<String> getLines() {
+        addLines();
+
+
         List<String> strings = new ArrayList<>();
         //pkg
         strings.add("package " + javaInfo.pkg + ";");
@@ -82,6 +86,9 @@ public abstract class CoreBuilder implements Symbol {
                 return false;
             }
         });
+
+        strings.addAll(beforeClassLines);
+
         //class的描述
         StringBuilder classSb = new StringBuilder();
         classSb.append(classType()).append(" ");
@@ -122,7 +129,6 @@ public abstract class CoreBuilder implements Symbol {
         strings.add("");
         //中间的需要补充
 
-        addLines();
 
         strings.addAll(fieldLines);
         strings.addAll(methodLines);
@@ -158,45 +164,33 @@ public abstract class CoreBuilder implements Symbol {
         return false;
     }
 
-    protected void addfieldLine(String line, Object... tags) {
-        fieldLines.add(TagTools.dealLine(line, tags));
+
+    protected void tempLines(String line, int index) {
+        tempLines.put(index, line);
     }
 
-    protected void addMethodLine(String line, Object... tags) {
-        methodLines.add(TagTools.dealLine(line, tags));
+    protected void addFields(String line, Object... datas) {
+        fieldLines.add(TagTools.dealLine(line, datas));
     }
 
-
-    public static interface LineData<T> {
-        public Object[] data(int position, T t);
+    protected void addFields(int index, Object... datas) {
+        fieldLines.add(TagTools.dealLine(tempLines.get(index), datas));
     }
 
-    protected <T> void addFieldLine(String line, List<T> ts, DatasGetter<T> lineData) {
-        Ts.ts(ts).ls(getEachTsForFieldLine(line, lineData));
+    protected void addMethod(String line, Object... datas) {
+        methodLines.add(TagTools.dealLine(line, datas));
     }
 
-    protected <T> void addFieldLine(String line, Set<T> ts, DatasGetter<T> lineData) {
-        Ts.ts(ts).ls(getEachTsForFieldLine(line, lineData));
+    protected void addMethod(int index, Object... datas) {
+        methodLines.add(TagTools.dealLine(tempLines.get(index), datas));
     }
 
-    private <T> BaseTs.EachTs<T> getEachTsForFieldLine(String line, DatasGetter<T> lineData) {
-        return new BaseTs.EachTs<T>() {
-            @Override
-            public boolean each(int position, T t) {
-                Object[] datas = lineData.data(position, t);
-                int count = CountTool.count(datas);
-                if (count > 0) {
-                    String line1 = line;
-                    for (int i = 0; i < count; i += 2) {
-                        String tag = (String) datas[i];
-                        String data = StringTool.toString(datas[i + 1]);
-                        line1 = line1.replace(tag, data);
-                    }
-                    fieldLines.add(line1);
-                }
-                return false;
-            }
-        };
+    protected void addHeader(String line, Object... datas) {
+        beforeClassLines.add(TagTools.dealLine(line, datas));
+    }
+
+    protected void addHeader(int index, Object... datas) {
+        beforeClassLines.add(TagTools.dealLine(tempLines.get(index), datas));
     }
 
 }

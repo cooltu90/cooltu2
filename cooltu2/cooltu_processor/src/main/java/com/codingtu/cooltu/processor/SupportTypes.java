@@ -1,12 +1,14 @@
 package com.codingtu.cooltu.processor;
 
 import com.codingtu.cooltu.processor.annotation.ModuleInfo;
+import com.codingtu.cooltu.processor.annotation.create.CreateAct;
 import com.codingtu.cooltu.processor.annotation.ui.DefaultCode;
 import com.codingtu.cooltu.processor.annotation.ui.DefaultDialogLayout;
 import com.codingtu.cooltu.processor.annotation.ui.DefaultEditDialogLayout;
 import com.codingtu.cooltu.processor.annotation.ui.DefaultNoticeDialogLayout;
 import com.codingtu.cooltu.processor.annotation.ui.DefaultToastDialogLayout;
 import com.codingtu.cooltu.processor.annotation.ui.VH;
+import com.codingtu.cooltu.processor.deal.CreateActDeal;
 import com.codingtu.cooltu.processor.deal.DefaultCodeDeal;
 import com.codingtu.cooltu.processor.deal.DefaultDialogLayoutDeal;
 import com.codingtu.cooltu.processor.deal.DefaultEditDialogLayoutDeal;
@@ -30,7 +32,8 @@ public class SupportTypes {
                 DefaultNoticeDialogLayout.class, DefaultNoticeDialogLayoutDeal.class,
                 DefaultEditDialogLayout.class, DefaultEditDialogLayoutDeal.class,
                 DefaultDialogLayout.class, DefaultDialogLayoutDeal.class,
-                VH.class, VHDeal.class
+                VH.class, VHDeal.class,
+                CreateAct.class, CreateActDeal.class,
         };
     }
 

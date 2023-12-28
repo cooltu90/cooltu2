@@ -3,9 +3,9 @@ package com.codingtu.cooltu.processor.builder.impl;
 import com.codingtu.cooltu.constant.FullName;
 import com.codingtu.cooltu.constant.Pkg;
 import com.codingtu.cooltu.lib4j.data.java.JavaInfo;
+import com.codingtu.cooltu.lib4j.ts.Ts;
+import com.codingtu.cooltu.lib4j.ts.impl.BaseTs;
 import com.codingtu.cooltu.processor.builder.core.CoreBuilder;
-import com.codingtu.cooltu.processor.lib.lines.DatasGetter;
-import com.codingtu.cooltu.processor.lib.lines.MethodLines;
 import com.codingtu.cooltu.processor.lib.log.Logs;
 import com.codingtu.cooltu.processor.lib.tools.IdTools;
 import com.codingtu.cooltu.processor.lib.tools.LayoutTools;
@@ -23,17 +23,6 @@ public class VHBuilder extends CoreBuilder {
     }
 
     @Override
-    protected boolean isBuild() {
-        return true;
-    }
-
-    @Override
-    protected void beforeBuild(List<String> lines) {
-        super.beforeBuild(lines);
-        Logs.i(lines);
-    }
-
-    @Override
     protected String[] getParents() {
         return new String[]{
                 FullName.CORE_ADAPTER_VH,
@@ -42,43 +31,24 @@ public class VHBuilder extends CoreBuilder {
 
     @Override
     protected void addLines() {
-        //控件字段
-        addFieldLine("    public TextView viewName;", viewInfos, new DatasGetter<LayoutTools.ViewInfo>() {
+        tempLines("    public [TextView] [tv];", 0);
+        addMethod("    public [VHClass]([ViewGroup] parent) {", javaInfo.name, FullName.VIEW_GROUP);
+        addMethod("        super([R.layout.layout_name], parent);", layoutId.toString());
+        tempLines("        [tv] = [itemView.]findViewById([rPkg].R.id.[tv]);", 1);
+        Ts.ls(viewInfos, new BaseTs.EachTs<LayoutTools.ViewInfo>() {
             @Override
-            public Object[] data(int position, LayoutTools.ViewInfo viewInfo) {
-                return new Object[]{
-                        "viewName", viewInfo.fieldName,
-                        "TextView", viewInfo.tag,
-                };
+            public boolean each(int position, LayoutTools.ViewInfo viewInfo) {
+                addFields(0, viewInfo.tag, viewInfo.fieldName);
+                String parent = "itemView.";
+                if (!viewInfo.fieldName.equals(viewInfo.id)) {
+                    parent = viewInfo.parent.fieldName + ".";
+                }
+                addMethod(1, viewInfo.fieldName, parent, Pkg.R, viewInfo.id);
+                return false;
             }
         });
+        addMethod("    }");
 
-        //构造函数
-        MethodLines.create()
-                .addLine("    public VHClass(ViewGroup parent) {")
-                .addLine("        super(R.layout.layout_vh, parent);")
-                .forLine("        viewName = itemView.findViewById(R.id.viewId);", 0)
-                .addLine("    }")
-                .data(
-                        "VHClass", javaInfo.name,
-                        "ViewGroup", FullName.VIEW_GROUP,
-                        "R.layout.layout_vh", layoutId.toString()
-                )
-                .forData(0, viewInfos, new DatasGetter<LayoutTools.ViewInfo>() {
-                    @Override
-                    public Object[] data(int position, LayoutTools.ViewInfo viewInfo) {
-                        String parent = "itemView.";
-                        if (!viewInfo.fieldName.equals(viewInfo.id)) {
-                            parent = viewInfo.parent.fieldName + ".";
-                        }
-                        return new Object[]{
-                                "viewName", viewInfo.fieldName,
-                                "itemView.", parent,
-                                "R.id.viewId", Pkg.R + ".R.id." + viewInfo.id,
-                        };
-                    }
-                })
-                .add(methodLines);
     }
 }
 
