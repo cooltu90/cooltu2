@@ -23,6 +23,7 @@ public abstract class CoreBuilder implements Symbol {
     protected List<String> fieldLines = new ArrayList<>();
     protected List<String> methodLines = new ArrayList<>();
     protected List<String> beforeClassLines = new ArrayList<>();
+    protected List<String> importLines = new ArrayList<>();
     private Map<Integer, String> tempLines = new HashMap<>();
 
     @Override
@@ -73,20 +74,13 @@ public abstract class CoreBuilder implements Symbol {
     protected List<String> getLines() {
         addLines();
 
-
         List<String> strings = new ArrayList<>();
         //pkg
         strings.add("package " + javaInfo.pkg + ";");
         strings.add("");
         //imports
-        Ts.ls(getImports(), new BaseTs.EachTs<String>() {
-            @Override
-            public boolean each(int position, String s) {
-                strings.add("import " + s + ";");
-                return false;
-            }
-        });
-
+        strings.addAll(importLines);
+        strings.add("");
         strings.addAll(beforeClassLines);
 
         //class的描述
@@ -140,10 +134,6 @@ public abstract class CoreBuilder implements Symbol {
 
     protected abstract void addLines();
 
-    protected String[] getImports() {
-        return new String[0];
-    }
-
     protected String[] getParents() {
         return new String[0];
     }
@@ -191,6 +181,24 @@ public abstract class CoreBuilder implements Symbol {
 
     protected void addHeader(int index, Object... datas) {
         beforeClassLines.add(TagTools.dealLine(tempLines.get(index), datas));
+    }
+
+    protected void addImport(String line, Object... datas) {
+        importLines.add(new StringBuilder().append("import ").append(TagTools.dealLine(line, datas)).append(";").toString());
+    }
+
+    protected void addImports(String... imports) {
+        Ts.ls(imports, new BaseTs.EachTs<String>() {
+            @Override
+            public boolean each(int position, String importLine) {
+                addImport(importLine);
+                return false;
+            }
+        });
+    }
+
+    protected void addImport(int index, Object... datas) {
+        importLines.add(new StringBuilder().append("import ").append(TagTools.dealLine(tempLines.get(index), datas)).append(";").toString());
     }
 
 }

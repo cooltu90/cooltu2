@@ -99,6 +99,7 @@ public class FullName {
     //不变的
     public static final String VIEW = "android.view.View";
     public static final String VIEW_GROUP = "android.view.ViewGroup";
+    public static final String LIST = "";
     public static final String STRING = "java.lang.String";
     public static final String RETROFIT_GET = "retrofit2.http.GET";
     public static final String RETROFIT_POST = "retrofit2.http.POST";
